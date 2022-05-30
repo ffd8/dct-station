@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- why hello there! -->
+	<title>DCT-ENCRYPTION-STATION</title>
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, width=device-width">
+
+	<meta charset="utf-8">
+	<!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
+	<style type="text/css">
+		@font-face {
+			font-family: 'terminal-grotesque';
+			src: url('includes/fonts/terminal-grotesque-webfont.woff2') format('woff2'),
+			url('includes/fonts/terminal-grotesque-webfont.woff') format('woff');
+			font-weight: 200;
+			font-style: normal;
+		}
+		body{
+			margin:0;
+			overflow:hidden;
+			background-image: url('includes/glitch/transparent-320x240.jpg');
+			background-size: cover;
+			image-rendering: -moz-crisp-edges;
+			image-rendering: -webkit-crisp-edges;
+			image-rendering: pixelated;
+			image-rendering: crisp-edges;
+		}
+		canvas{
+			position:fixed;
+			top:0;
+			left:0;
+			z-index:-1;
+			width:100vw;
+			height:100vh;
+			margin:0;
+		}
+		*{
+			outline:none;
+			box-sizing:border-box;
+			font-family: 'terminal-grotesque';
+		}
+		hr{
+			margin: 3px 0 3px 0;
+		}
+		.gui, #key{
+			position:fixed;
+			left:25px;
+			top:50px;
+			font-size:10pt;
+			background:#222;
+			border:1px solid #aaa;
+			padding:5px;
+			color:#fff;
+			min-width: 200px;
+		}
+		#gui-collapse{
+			border-left: 1px solid #aaa;
+			padding: 4px;
+			cursor: pointer;
+			margin-top: -7px;
+		}
+		.head{
+			cursor: move;
+			padding:10px;
+		}
+		.nav{
+			display: flex;
+			flex-direction: row;
+			align-items: stretch;
+		}
+		.txt-input{
+			font-size:8pt;
+			width:100%;
+			height: 100px;
+		}
+		.img-input{
+			color:#222;
+			width:90px;
+		}
+		#logo-holder{
+			position: absolute;
+			bottom: -110px;
+			left: 0;
+			display: none;
+		}
+		#logo-holder img{
+			border: 1px solid #aaa;
+		}
+		#key{
+			position: absolute;
+			color: #fff;
+			width: 283px;
+			/*height: 300px;*/
+			box-sizing: content-box;
+			display: none;
+		}
+		#key .head{
+			cursor: default;
+		}
+		#key img{
+			clear: both;
+			width: 100%;
+		}
+		#key-header{
+			/*text-align: center;*/
+		}
+		#key-holder{
+			height: 300px;
+			overflow: auto;
+		}
+		.noselect {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Old versions of Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome, Edge, Opera and Firefox */
+		}
+		.logo{
+			width: 100px;
+		}
+		button{
+			flex: 1;
+			margin-right: 2px;
+			padding: 2px 2px 2px 2px;
+			border: 1px solid #aaa;
+			border-radius: 2px;
+			color: #000;
+		}
+
+	</style>
+<script type="text/javascript" src="includes/libs/p5.min.js"></script>
+<script type="text/javascript" src="includes/libs/p5.glitch.js"></script>
+<script type="text/javascript" src="includes/libs/print.min.js"></script>
+</head>
+<body>
+	<div id="gui" class="gui">
+		<div>
+			<span id="gui-header" class="head noselect">DCT ENCRYPTION STATION</span>
+			<span id="gui-collapse" onclick="guiToggle()">↑</span>
+		</div>
+		
+		<div id="gui-contents">
+			<hr>
+			<div class="nav noselect">
+				<button onclick="aboutToggle()">ABOUT</button>
+				<button onclick="keyToggle()">KEY</button>
+				<button id="button-save" onclick="glitchSave()">SAVE</button>
+				<button id="button-share" onclick="glitchShare()">SHARE</button>
+			</div>
+			<hr>
+			<div class="nav noselect">
+				<button id="button-webcam" onclick="webcamInit()">WEBCAM</button>
+				<button style="" onclick="document.getElementById('img-input').click()">IMAGE</button>
+				<button onclick="glitchReset()">RESET</button>
+				<div id="img-holder" style="display:none;"></div>
+				<!-- <input type='file' id="img-input" style="display:none"> -->
+			</div>
+			<hr>
+			<textarea id="txt-input" class="txt-input" placeholder="enter message" onkeyup="glitchProcess()"></textarea>
+			<hr>
+			<div class="noselect">
+				<input type="checkbox" name="" onchange="dctColor()"> DCT_COLOR <input type="checkbox" name="" onchange="dctAnimate()"> ANIMATE
+			</div>
+			
+			<div id="logo-holder">
+				<a href="https://www.getxophoto.com/en/2022-edition/artists/rosa-menkman-and-ted-davis/" target="_blank"><img src="includes/images/getxo-logo.svg" class="logo" style="fill:#000;"></a>
+			</div>
+
+
+			<div id="key" class="noselect">
+				<div id="key-header">
+					<span class="head">DCT ENCRYPTION KEY</span>
+					<span style="float:right;cursor:pointer;" onclick="keyToggle()">X</span>
+				</div>
+				<hr>
+				<div id="key-holder">
+					<img src="includes/images/key_1.png"><br>
+					<img src="includes/images/key_2.png">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+	
+<script type="text/javascript">
+
+
+function getParam(paramSearch){
+	let params = document.location.search.substring(1).split('&');
+	for(let i=0; i<params.length; i++){
+		let keyVal = params[i].split('=');
+		if(keyVal[0] == paramSearch){
+			return keyVal[1];
+		}
+	}
+}
+
+/*
+TODO
+- chrome » chrome://extensions/ » enable 'developer mode' » 'load unpacked' » 'disable download bar'
+- launch w/: *path to app* --kiosk --kiosk-printing https://dct-station.glitch.me/\?print\=1
+- 
+*/
+
+let usePrinter = false
+let gui = document.getElementById('gui')
+let guiContents = document.getElementById('gui-contents')
+let guiCollapse = document.getElementById('gui-collapse')
+let txtInput = document.getElementById('txt-input')
+let imgInput = document.getElementById('img-input')
+let imgHolder = document.getElementById('img-holder')
+let logoHolder = document.getElementById('logo-holder')
+let btnWebcam = document.getElementById('button-webcam')
+let btnShare = document.getElementById('button-share')
+let btnSave = document.getElementById('button-save')
+let key = document.getElementById('key')
+
+// https://stackoverflow.com/a/62035946
+let isApple = ['iPhone', 'iPad', 'iPod', 'iPad Simulator', 'iPhone Simulator', 'iPod Simulator',].includes(navigator.platform)
+
+if(getParam('print') == 1){
+	btnShare.innerHTML = 'PRINT'
+	btnSave.style.display = 'none'
+	usePrinter = true
+}
+
+
+// let libs = ["includes/libs/p5.glitch.js"]
+let cnv, W = 320, H = 240 
+let quantOffset = 0, quantOffsetColor = 0, useQuantColor = false
+let fc = 0, useAnimate = false
+let dctString = ""
+
+let dct, dctLayer, dctScl = 1,
+	dctSize, dctPos, dctAdd = 20
+let glitchLayer, glitchLoading = false, cursorShow = false
+let glitchScl = 1
+
+let alphaString = ` !"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\\]^_`
+let alpha = []
+let txt = new Map()
+
+let comboLayer
+
+let useCapture = false, aboutLoaded = false,
+	capture
+
+
+function preload() {
+	imgTransparent = loadImage('includes/glitch/transparent-320x240.jpg')
+	imgCredits = loadImage('includes/glitch/rosa-jon-ted.jpg')
+	dct = loadFont('includes/fonts/DCT 010 0000 - 101 1111.ttf')
+}
+
+function setup() {
+	cnv = createCanvas(windowWidth, windowHeight)
+	comboLayer = createGraphics(width, height)
+	glitch = new Glitch(this)
+	glitch.pixelate(1)
+	glitch.loadType('jpg')
+	glitch.loadQuality(.95)
+	glitch.limitBytes(0.1, 1)
+	glitch.errors(false)
+	background(0)
+	noSmooth()
+	pixelDensity(1)
+
+	comboLayer.pixelDensity(1)
+	comboLayer.noSmooth()
+
+	alphaInit()
+	glitchInit(imgTransparent)
+	dctInit()
+	guiInit()
+}
+
+function windowResized(){
+	resizeCanvas(windowWidth, windowHeight)
+	if(useCapture) {
+		webcamInit()
+	}
+	comboLayer = createGraphics(width, height)
+	comboLayer.pixelDensity(1)
+	comboLayer.noSmooth()
+	dctLayer.noSmooth()
+	dctLayer.pixelDensity(1)
+	glitchProcess() 
+}
+
+function draw() {
+	background(0)
+
+	if(useCapture || useAnimate) {
+		if(useCapture){
+			glitch.loadImage(capture)
+		}
+		if(useAnimate){
+			fc+=.5
+		}
+		glitchProcess()
+	}
+
+	if(!glitchLoading){
+		if(aboutLoaded){
+			comboLayer.push()
+			comboLayer.translate(comboLayer.width/2, comboLayer.height/2)
+			comboLayer.imageMode(CENTER)
+			comboLayer.image(glitch.image, 0, 0, glitch.width, glitch.height)
+			comboLayer.pop()
+		}else{
+			comboLayer.image(glitch.image, 0, 0, glitch.width, glitch.height)
+		}
+		// imageMode(CENTER)
+		// glitchScl = width >= height ? glitch.height/height : glitch.width/width
+		// image(glitch.image, width / 2, height / 2, glitch.width * glitchScl, glitch.height * glitchScl)
+		// image(glitch.image, 0, 0, glitch.width * glitchScl, glitch.height * glitchScl)
+		
+	}
+	
+	// push()
+	// translate(0, height)
+	// rotate(radians(-90))
+	// comboLayer.image(dctLayer, 0, 0)
+	comboLayer.image(dctLayer, 0, 0, glitch.width, glitch.height)
+	// image(dctLayer, 0, 0, height* glitchScl, height* glitchScl)
+	// pop()
+
+	image(comboLayer, 0, 0)
+}
+
+function alphaInit() {
+	alpha = alphaString.split(``)
+	for(let a of alpha) {
+		txt.set(a, 0)
+	}
+}
+
+
+
+function dctInit() {
+	dctLayer = createGraphics(W * dctScl, H * dctScl)
+	dctLayer.noSmooth()
+	dctLayer.pixelDensity(1)
+	dctLayer.textFont(dct)
+	// dctLayer.textSize(W / 3)
+	// println([dctLayer.width, width, glitch.width])
+	dctLayer.textSize(dctLayer.width/8*.625)
+	dctSize = round(dctLayer.textWidth("A")) //W/3
+	// println(dctSize)
+	dctPos = createVector(0, dctSize)
+}
+
+function dctReset() {
+	dctLayer.clear()
+	dctPos = createVector(0, dctSize)
+}
+
+function dctColor(){
+	useQuantColor = !useQuantColor
+	glitchProcess()
+}
+
+function dctAnimate(){
+	useAnimate = !useAnimate
+	glitchProcess()
+}
+
+
+function glitchInit(im) {
+	glitchLoading = true
+	glitchLayer = createGraphics(W, H)
+	glitchLayer.pixelDensity(1)
+	let tscl = im.width > im.height ? glitchLayer.width / im.width : glitchLayer.height / im.height
+	// if(im.width >= im.height){
+	// 	glitchLayer.imageMode(CENTER)
+	// 	glitchLayer.image(im, glitchLayer.width / 2, glitchLayer.height / 2, im.width * tscl, im.height * tscl)
+	// }else{
+		glitchLayer.image(im, 0, 0, im.width * tscl, im.height * tscl)		
+	// }
+	// glitchLayer.background('red')
+	//	quantOffset = glitch.bytesToHex(glitch.bytes).indexOf('ffdb004300') / 2 + 5 // ffdb004301 color
+	glitch.loadImage(glitchLayer, () => {
+		quantOffset = glitch.bytesToHex(glitch.bytes).indexOf('ffdb004300') / 2 + 5 // ffdb004301 color
+		quantOffsetColor = glitch.bytesToHex(glitch.bytes).indexOf('ffdb004301') / 2 + 5 // ffdb004301 color
+		glitchLoading = false
+	})
+}
+
+
+function glitchSave() {
+	if(!isApple){
+		save('dct-station.png')
+	}else{
+		// https://stackoverflow.com/a/5405804
+		// https://stackoverflow.com/a/27798235
+		const dataUrl = cnv.elt.toDataURL();
+		var canvasImg = new Image();
+		canvasImg.src = dataUrl;
+		var w = window.open("");
+		w.document.write("<style>body{background:#000;color:#fff;font-family:sans-serif;}</style>SAVE : Press and hold image, select <b>Add to Photos</b><br>(due to iOS lack of direct save...)<br><br>"+canvasImg.outerHTML);
+	}
+}
+
+function glitchShare(){
+	
+		let consent = confirm('Share image with GETXOPHOTO 2022?\nImages will be printed and added to the installation.')
+
+		if(consent){
+			let imgUrl = `https://api.imgbb.com/1/upload`
+			const body = new FormData();
+		    body.append("image", cnv.elt.toDataURL().split(",").pop()); //To delete 'data:image/png;base64,' otherwise imgbb won't process it.
+		    body.append("name", 'dct-station-'+timeStamp());
+		    body.append("key", '0b821fe79270d8afabc20b35226fed75');
+		    fetch(imgUrl, {
+		        method: "POST",
+		        body: body
+		    })
+		    .then(res => res.json())
+			.then(jsonObj => {
+				if(jsonObj.success){
+					if(usePrinter){
+						printJS({printable: cnv.elt.toDataURL(), type: 'image', imageStyle: 'width:100%'});
+					}
+		    		alert('Thanks for sharing!\nRosa + Ted')
+		    	}
+			})
+		    .catch(err => console.log(err));
+		}
+
+}
+
+function glitchProcess() {
+	let txtMsg = txtInput.value.toLowerCase()
+
+	dctReset()
+	// dctLayer.text(txtMsg, 0, 0, dctLayer.width, dctLayer.height)
+	glitch.resetBytes()
+	alphaInit()
+
+	// needed?
+	if(txtMsg == ''){
+		glitch.buildImage()
+		return
+	}
+	
+	// collect alpha in msg
+	let txtSplit = txtMsg.split('')
+	for(let t of txtSplit) {
+		let uk = t //.toUpperCase()
+
+		if(t == '\n') {
+			dctPos.x = 0
+			dctPos.y += dctSize
+			// dctString += '\n'
+		}
+
+		if(txt.has(uk)) {
+			let curVal = txt.get(uk)
+			// print(alphaString.indexOf(uk))
+			let addOn = dctAdd //alphaString.indexOf(uk)//10
+			if(uk == ' ') {
+				addOn = 1 //1 //1
+				// dctPos.x += 4*dctSize
+			}
+			txt.set(uk, curVal + addOn)
+
+			// draw DCT
+			dctLayer.fill(255)
+			dctLayer.noStroke()
+			dctLayer.rect(dctPos.x, dctPos.y - dctSize, dctSize)
+			dctLayer.fill(0)
+			dctLayer.text(uk, dctPos.x, dctPos.y)
+			// dctString += key
+			// layer.clear()
+			// layer.text(dctString, 0, cs*2, layer.width, layer.height)
+			dctPos.x += dctSize
+			if(dctPos.x >= dctLayer.width) {
+				dctPos.x = 0
+				dctPos.y += dctSize
+			}
+		}
+	}
+
+	// apply letters to offset of quant
+	let c = 0
+	for(let val of txt.values()) {
+		newVal = val
+		if(useAnimate){
+			newVal = (fc) % val
+		}
+		glitch.replaceByte(quantOffset + c, glitch.bytes[quantOffset] + newVal)
+		if(useQuantColor){
+			glitch.replaceByte(quantOffsetColor + c, glitch.bytes[quantOffset] + newVal)
+		}
+		c++
+	}
+
+	glitch.buildImage()
+	// image(glitch.image, 0, 0, glitch.width, glitch.height)
+}
+
+
+function glitchReset() {
+	if(useCapture){
+		webcamStop()
+	}
+	glitchInit(imgTransparent)
+	dctReset()
+	txtInput.value = ''
+	logoHolder.style.display = 'none'
+	txtInput.style.height = '100px'
+	aboutLoaded = false
+}
+
+
+
+function webcamInit() {
+	if(useCapture) {
+		webcamStop()
+		return
+	} else {
+		capture = createCapture(VIDEO)
+		if(width > height){
+			capture.size(320, 240)
+		}else{
+			capture.size(240, 320)
+		}
+		capture.hide()
+		useCapture = true
+		btnWebcam.style.color = 'red'
+		// loop()
+	}
+}
+
+function webcamStop() {
+	if(useCapture){
+		capture.remove()
+		useCapture = false
+		btnWebcam.style.color = '#000'
+		// glitchInit(imgTransparent)		
+		// glitchReset()
+		glitchProcess()
+	}
+}
+
+function guiToggle(){
+	// console.log(guiContents.style.display)
+	if(guiContents.style.display == '' || guiContents.style.display == 'inline'){
+		guiContents.style.display='none'
+		guiCollapse.innerHTML = '↓'
+	}else{
+		guiContents.style.display='inline'
+		guiCollapse.innerHTML = '↑'
+	}
+	
+}
+
+function guiInit() {
+	createFileInput((file) => {
+		if(file.type === 'image') {
+			createImg(file.data, (im) => {
+				im.hide()
+				if(useCapture){
+					webcamStop()
+				}
+				glitchInit(im)
+				glitchProcess()
+			});
+
+
+		} else {
+			img = null;
+		}
+	}).parent(imgHolder).class('img-input').id('img-input')
+}
+
+function aboutToggle(){
+	webcamStop()
+	let credits = `DCT ENCRYPTION STATION
+ROSA MENKMAN + TED DAVIS
+2022
+
+DCT ENCRYPTION STATION ALLOWS YOU TO ENCRYPT MESSAGES IN JPEG FILES BY EXPLOITING ITS COMPRESSION PROCESS. 
+USING YOUR WEBCAM OR UPLOADING A PHOTO, A TEXT MESSAGE CAN TO BE ADDED TO AN IMAGE, INCORPORATING IT INTO BOTH THE VISUAL SURFACE AND THE DATA THAT MAKES UP THE FILE.
+
+
+CREATED FOR GETXOPHOTO 2022
+GETXOPHOTO.COM
+
+`
+	txtInput.value = credits.toUpperCase()
+	txtInput.style.height = '260px'
+	logoHolder.style.display = 'inline'
+	glitchInit(imgCredits)
+	glitchProcess()
+	aboutLoaded = true
+}
+
+function keyToggle(){
+	if(key.style.display == 'none' || key.style.display == ''){
+		key.style.display = 'block'
+		// console.log((gui.offsetTop + gui.offsetHeight) + 'px')
+		key.style.left = 0//gui.offsetLeft + 'px'
+		key.style.top = (gui.offsetHeight + 5) + 'px'
+	}else{
+		key.style.display = 'none'
+	}
+}
+
+window.onload = addListeners;
+
+	// if(getParam('beta') == undefined){
+	// 	document.body.innerHTML = 'coming soon'
+	// }
+
+	let offset = [0, 0]
+	let moved = false, target = null, touchobj = null
+
+	function addListeners(){
+	    document.getElementById('gui-header').addEventListener('mousedown', mouseDown, false);
+	    document.getElementById('gui-header').addEventListener('touchstart', touchDown, false);
+	    window.addEventListener('mouseup', mouseUp, false);
+	    window.addEventListener('touchup', touchUp, false);
+	}
+
+	function mouseUp(){
+	    window.removeEventListener('mousemove', divMove, true);
+		moved = false
+		target = null
+	}
+
+	function mouseDown(e){
+	  target = e.target.id.split('-')[0]
+	  window.addEventListener('mousemove', divMove, true);
+	  let div = document.getElementById(target);
+	  offset = [e.clientY -div.offsetTop, e.clientX  - div.offsetLeft]
+	  moved = false
+	}
+
+	// https://stackoverflow.com/a/25920129
+	function touchDown(e){
+	  touchobj = e.changedTouches[0] // reference first touch point
+	  target = touchobj.target.id.split('-')[0]
+	  window.addEventListener('touchmove', touchMove, true);
+	  let div = document.getElementById(target);
+	  offset = [touchobj.clientY -div.offsetTop, touchobj.clientX  - div.offsetLeft]
+	  moved = false
+	  e.preventDefault() // prevent default click behavior
+	}
+
+	function touchMove(e){
+	  touchobj = e.changedTouches[0]
+	  console.log(touchobj)
+	  moved = true
+	  let div = document.getElementById(target);
+	  div.style.position = 'absolute';
+	  div.style.top = (touchobj.clientY - offset[0]) + 'px';
+	  div.style.left = (touchobj.clientX  - offset[1]) + 'px';
+	}
+
+	function touchUp(){
+	    window.removeEventListener('touchmove', touchMove, true);
+	    touchobj = null
+		moved = false
+		target = null
+	}
+
+	function divMove(e){
+	  moved = true
+	  let div = document.getElementById(target);
+	  div.style.position = 'absolute';
+	  div.style.top = (e.clientY - offset[0]) + 'px';
+	  div.style.left = (e.clientX  - offset[1]) + 'px';
+	}
+
+
+function timeStamp(timeInput){
+	let d = new Date();
+	d.setTime( d.getTime() - new Date().getTimezoneOffset()*60*1000 );
+	if(timeInput != undefined){
+		d = new Date(timeInput * 1);
+	}
+	return d.toISOString().replace(/[^0-9]/g, '').slice(0, -3);
+}
+</script>
+
+</body>
+</html>
